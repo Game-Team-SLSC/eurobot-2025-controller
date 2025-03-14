@@ -4,12 +4,7 @@ LCDDisplay::LCDDisplay() : lcd(0x6B, 16, 2) {}
 
 void LCDDisplay::init() {
   lcd.init(); // Initialisation de l'écran LCD
-  lcd.backlight();
-  lcd.
-}
-
-void LCDDisplay::setRGB(uint8_t r, uint8_t g, uint8_t b) {
-  //lcd.setRGB(r, g, b); // Configuration du rétroéclairage
+  lcd.setPWM(BLUE, 254);
 }
 
 void LCDDisplay::print(const char* text) {
