@@ -169,6 +169,8 @@ void loop() {
 
   // Slider
   remoteData.slider = map(slider.readValue(), 0, 1023, 0, 255);
+  remoteData.joystickRight = joystickRight.getData();
+  remoteData.joystickLeft = joystickLeft.getData();
 
   // Score
   remoteData.score = score; // Utiliser la position de l'encodeur mise à jour par les interruptions
@@ -189,5 +191,4 @@ void loop() {
 
   // Délai pour stabiliser
   delay(20);
-  Serial.println(remoteData.joystickRight.sw);
 }

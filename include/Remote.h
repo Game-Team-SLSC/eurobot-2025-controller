@@ -2,18 +2,19 @@
 #define REMOTE_H
 
 #include <RF24.h>
-#include <JoystickData.h> // Inclusion de la structure JoystickData
-#include <RemoteData.h>  // Inclusion de la structure RemoteData
+#include "JoystickData.h"
+#include "RemoteData.h"
+// Inclure la file d'attente personnalisée
 
 class Remote {
   private:
-    RF24 radio;
+    RF24 radio; // Objet RF24 pour la communication radio
+    bool isReady; // Indique si la radio est prête à envoyer des données
 
   public:
     Remote();
-    void setup();
-    bool sendJoystickData(const JoystickData& data); // Envoie les données du joystick
-    bool sendRemoteData(const RemoteData& data);     // Envoie les autres données
+    void setup(); // Initialiser la communication radio
+    bool sendRemoteData(const RemoteData& data); // Ajouter d'autres données à la file d'attente
 };
 
 #endif
