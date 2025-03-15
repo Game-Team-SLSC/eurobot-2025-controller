@@ -9,7 +9,7 @@ class Joystick {
   private:
     int pinVert;    // Broche pour l'axe vertical
     int pinHoriz;   // Broche pour l'axe horizontal
-    ezButton buttonSW; // Bouton SW avec debounce
+    int buttonSW; // Bouton SW avec debounce
 
   public:
     Joystick(int pV, int pH, int pSW); // Constructeur

@@ -3,15 +3,13 @@
 
 #include <Arduino.h>
 #include <ezButton.h>
-#include <Encoder.h>
+#include <RotaryEncoder.h>
 
 class EncoderZ {
   private:
-    Encoder encoder;       // Utilisation de la classe Encoder
-    ezButton buttonSW;     // Bouton SW avec debounce
-    int position;          // Position actuelle de l'encodeur
-    int minPosition;       // Position minimale
-    int maxPosition;       // Position maximale
+    bool pin1;
+    bool pin2;
+    byte position;
 
   public:
     EncoderZ(int pA, int pB, int pSW, int minPos = 0, int maxPos = 200);

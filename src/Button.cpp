@@ -1,7 +1,7 @@
 #include "Button.h"
 
 Button::Button(int p) : button(p), pin(p) {
-  button.setDebounceTime(50); // Débounce de 50 ms
+  button.setDebounceTime(0); // Débounce de 50 ms
 }
 
 void Button::update() {
