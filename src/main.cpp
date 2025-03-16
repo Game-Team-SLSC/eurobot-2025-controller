@@ -50,7 +50,7 @@
 const byte RF_ADDRESS[6] = "00001";
 
 // Variables globales
-volatile byte score = 130; // Position de l'encodeur (mise à jour par les interruptions)
+volatile byte score = 130; // Score initial
 volatile uint8_t lastState = 0; // État précédent des broches de l'encodeur
 bool encoderButtonState = false; // État du bouton de l'encodeur
 
@@ -147,14 +147,21 @@ void loop() {
   threePosButton.update();
 
   // Lire l'état du bouton de l'encodeur
-  bool newEncoderButtonState = digitalRead(ENCODER_SW) == LOW; // LOW signifie appuyé (pull-up)
-  if (newEncoderButtonState != encoderButtonState) {
-    encoderButtonState = newEncoderButtonState;
+  bool currentButtonState = digitalRead(ENCODER_SW); // LOW signifie appuyé (pull-up)
+
+  // Si le bouton est pressé, ajouter 10 au score
+  if (currentButtonState) {
+    Serial.print("Bouton de l'encodeur relaché. Nouveau score : ");
+    Serial.println(score);
+  }
+  else {
+    score += 5;
+    score = constrain(score, 0, 255);
+    //Serial.println("Bouton de l'encodeur relâché.");
   }
 
-  // Afficher la position de l'encodeur
-  //Serial.print("Position de l'encodeur : ");
-  //Serial.println(position);
+  // Mettre à jour l'état du bouton
+  encoderButtonState = currentButtonState;
 
   // Mettre à jour l'affichage LCD
   lcd.displayScore(score);
@@ -176,10 +183,8 @@ void loop() {
   remoteData.score = score; // Utiliser la position de l'encodeur mise à jour par les interruptions
 
   // Bouton de l'encodeur
-
-  // Bouton à 3 positions
-  remoteData.sw = threePosButton.getState();
   remoteData.encoderButtonState = encoderButtonState;
+
 
   // Envoi des autres données via RF24
   bool remoteDataSent = remote.sendRemoteData(remoteData);
