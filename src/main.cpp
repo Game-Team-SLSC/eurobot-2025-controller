@@ -23,11 +23,11 @@
 #define BUTTON9_PIN 30
 #define BUTTON10_PIN 31
 
-#define JOYSTICK_RIGHT_VERT A11
-#define JOYSTICK_RIGHT_HORIZ A12
+#define JOYSTICK_RIGHT_VERT A1
+#define JOYSTICK_RIGHT_HORIZ A0
 #define JOYSTICK_RIGHT_SW 34
-#define JOYSTICK_LEFT_VERT A1
-#define JOYSTICK_LEFT_HORIZ A0
+#define JOYSTICK_LEFT_VERT A11
+#define JOYSTICK_LEFT_HORIZ A12
 #define JOYSTICK_LEFT_SW 33
 
 #define ENCODER_A 14 // Broche A de l'encodeur (PCINT10)
@@ -182,11 +182,9 @@ void loop() {
   // Score
   remoteData.score = score; // Utiliser la position de l'encodeur mise à jour par les interruptions
 
-  // Bouton de l'encodeur
-  remoteData.encoderButtonState = encoderButtonState;
-
-
   // Envoi des autres données via RF24
+  Serial.println(remoteData.joystickLeft.x);
+  
   bool remoteDataSent = remote.sendRemoteData(remoteData);
   if (remoteDataSent) {
     //Serial.println("Autres données envoyées avec succès !");

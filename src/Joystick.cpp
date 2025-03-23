@@ -12,6 +12,5 @@ JoystickData Joystick::getData() {
   JoystickData data;
   data.x = map(analogRead(pinHoriz), 0, 1023, 0, 255); // Conversion en byte (0-255)
   data.y = map(analogRead(pinVert), 0, 1023, 0, 255);  // Conversion en byte (0-255)
-  data.sw = digitalRead(buttonSW);                      // État du bouton SW
   return data;
 }
