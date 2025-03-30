@@ -51,6 +51,7 @@ const byte RF_ADDRESS[6] = "00001";
 
 // Variables globales
 volatile byte score = 130; // Score initial
+volatile byte lastScore = 130 ;
 volatile uint8_t lastState = 0; // État précédent des broches de l'encodeur
 bool encoderButtonState = false; // État du bouton de l'encodeur
 
@@ -120,8 +121,8 @@ void setup() {
   pinMode(ENCODER_SW, INPUT_PULLUP); // Broche du bouton de l'encodeur
 
   // Configuration des broches du bouton à 3 positions
-  pinMode(THREEPOS_UP, INPUT_PULLUP);
-  pinMode(THREEPOS_DOWN, INPUT_PULLUP);
+  pinMode(THREEPOS_UP, INPUT);
+  pinMode(THREEPOS_DOWN, INPUT);
 
   // Configuration des broches du slider
   pinMode(SLIDER_PIN, INPUT);
@@ -132,12 +133,14 @@ void setup() {
   // Initialisation de l'écran LCD
   lcd.init();
   lcd.print("Initialisation"); // Message de démarrage
+  lcd.displayScore(score);
 
   // Configuration des interruptions PCINT pour l'encodeur
   setupPCINT();
 }
 
 void loop() {
+
   // Mise à jour des capteurs
   for (int i = 0; i < 10; i++) {
     buttons[i].update();
@@ -162,10 +165,13 @@ void loop() {
 
   // Mettre à jour l'état du bouton
   encoderButtonState = currentButtonState;
+  
 
   // Mettre à jour l'affichage LCD
+  if ( lastScore != score) {
   lcd.displayScore(score);
-
+  }
+  
   // Préparation des autres données
   RemoteData remoteData;
 
@@ -174,16 +180,16 @@ void loop() {
     remoteData.buttons[i] = buttons[i].isPressed();
   }
 
+
   // Slider
   remoteData.slider = map(slider.readValue(), 0, 1023, 0, 255);
   remoteData.joystickRight = joystickRight.getData();
   remoteData.joystickLeft = joystickLeft.getData();
 
   // Score
-  remoteData.score = score; // Utiliser la position de l'encodeur mise à jour par les interruptions
+  lastScore = score; // Utiliser la position de l'encodeur mise à jour par les interruptions
 
   // Envoi des autres données via RF24
-  Serial.println(remoteData.joystickLeft.x);
   
   bool remoteDataSent = remote.sendRemoteData(remoteData);
   if (remoteDataSent) {
