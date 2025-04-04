@@ -45,6 +45,7 @@
 #define THREEPOS_DOWN 13
 
 #define SLIDER_PIN A8
+#define Motor_Vibr 56
 
 // Adresse RF24
 const byte RF_ADDRESS[6] = "00001";
@@ -101,6 +102,8 @@ void setup() {
   Serial.begin(9600);
   remote.setup();
 
+  pinMode(Motor_Vibr, OUTPUT );
+
   // Configuration des broches des boutons
   for (int i = 0; i < 10; i++) {
     pinMode(buttons[i].getPin(), INPUT_PULLUP);
@@ -135,6 +138,11 @@ void setup() {
   lcd.print("Initialisation"); // Message de démarrage
   lcd.displayScore(score);
 
+  digitalWrite(Motor_Vibr, HIGH); //On allume le moteur
+  delay(1000); // On fait une pause d'une seconde
+  digitalWrite(Motor_Vibr, LOW); // On éteint le moteur
+  delay(1000);
+
   // Configuration des interruptions PCINT pour l'encodeur
   setupPCINT();
 }
@@ -154,12 +162,13 @@ void loop() {
 
   // Si le bouton est pressé, ajouter 10 au score
   if (currentButtonState) {
-    Serial.print("Bouton de l'encodeur relaché. Nouveau score : ");
-    Serial.println(score);
+    //Serial.print("Bouton de l'encodeur relaché. Nouveau score : ");
+    //Serial.println(score);
   }
   else {
     score += 5;
     score = constrain(score, 0, 255);
+    delay(100);
     //Serial.println("Bouton de l'encodeur relâché.");
   }
 
@@ -190,12 +199,12 @@ void loop() {
   lastScore = score; // Utiliser la position de l'encodeur mise à jour par les interruptions
 
   // Envoi des autres données via RF24
-  
+  remoteData.score = score; // Mettre à jour le score dans les données à envoyer
   bool remoteDataSent = remote.sendRemoteData(remoteData);
   if (remoteDataSent) {
-    //Serial.println("Autres données envoyées avec succès !");
+    Serial.println("Autres données envoyées avec succès !");
   } else {
-    //Serial.println("Échec de l'envoi des autres données.");
+    Serial.println("Échec de l'envoi des autres données.");
   }
 
   // Délai pour stabiliser
