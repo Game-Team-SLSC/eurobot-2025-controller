@@ -47,14 +47,20 @@
 #define SLIDER_PIN A8
 #define Motor_Vibr 56
 
+enum EncoderState {
+  ENCODER_A_LOW_B_LOW = 0b00,
+  ENCODER_A_HIGH_B_LOW = 0b01,
+  ENCODER_A_LOW_B_HIGH = 0b10,
+  ENCODER_A_HIGH_B_HIGH = 0b11
+};
+
 // Adresse RF24
-const byte RF_ADDRESS[6] = "00001";
+const byte RF_ADDRESS[6] = "CR912";
 
 // Variables globales
-volatile byte score = 130; // Score initial
-volatile byte lastScore = 130 ;
-volatile uint8_t lastState = 0; // État précédent des broches de l'encodeur
-bool encoderButtonState = false; // État du bouton de l'encodeur
+volatile byte score = 66; // Score initial
+byte lastScore = score;
+volatile EncoderState lastEncoderState = ENCODER_A_LOW_B_LOW;
 
 // Initialisation des objets
 Button buttons[10] = {
@@ -74,23 +80,38 @@ Remote remote;
 
 // Fonction d'interruption pour mettre à jour la position de l'encodeur
 void updateEncoder() {
-  uint8_t state = (digitalRead(ENCODER_A) << 1) | digitalRead(ENCODER_B); // Combiner les états des broches A et B
-  if (state != lastState) {
-    if (lastState == 0b10 && state == 0b00) {
-      score++; // Rotation dans le sens horaire
-    } else if (lastState == 0b01 && state == 0b00) {
-      score--; // Rotation dans le sens anti-horaire
+  static EncoderState prevState = ENCODER_A_LOW_B_LOW;
+  EncoderState currState = (EncoderState)((digitalRead(ENCODER_A) << 1) | digitalRead(ENCODER_B));
+
+  Serial.println("Changed");
+
+  // Détection des crans uniquement sur 00 ou 11
+  if ((currState == ENCODER_A_HIGH_B_HIGH || currState == ENCODER_A_LOW_B_LOW) && currState != prevState) {
+    // Sens horaire : 00 -> 10 -> 11 ou 11 -> 01 -> 00
+    if ((prevState == ENCODER_A_HIGH_B_LOW && currState == ENCODER_A_HIGH_B_HIGH) ||
+        (prevState == ENCODER_A_LOW_B_HIGH && currState == ENCODER_A_LOW_B_LOW)) {
+      score++;
     }
-    score = constrain(score, 0, 255); // Limiter la position entre 0 et 255
-    lastState = state; // Mettre à jour l'état précédent
+    // Sens anti-horaire : 00 -> 01 -> 11 ou 11 -> 10 -> 00
+    else if ((prevState == ENCODER_A_LOW_B_HIGH && currState == ENCODER_A_HIGH_B_HIGH) ||
+             (prevState == ENCODER_A_HIGH_B_LOW && currState == ENCODER_A_LOW_B_LOW)) {
+      score--;
+    }
+    score = constrain(score, 0, 255);
   }
+
+  prevState = currState;
+  lastEncoderState = currState;
 }
 
 // Configuration des interruptions PCINT
 void setupPCINT() {
+  cli();
   // Activer les interruptions PCINT pour les broches 14 (PCINT10) et 15 (PCINT9)
   PCMSK1 |= (1 << PCINT10) | (1 << PCINT9); // Activer les interruptions pour les broches 14 et 15
   PCICR |= (1 << PCIE1); // Activer le groupe PCINT1 (broches 8 à 15)
+
+  sei();
 }
 
 // Fonction d'interruption PCINT1 (broches 8 à 15)
@@ -139,9 +160,9 @@ void setup() {
   lcd.displayScore(score);
 
   digitalWrite(Motor_Vibr, HIGH); //On allume le moteur
-  delay(1000); // On fait une pause d'une seconde
+  delay(500); // On fait une pause d'une seconde
   digitalWrite(Motor_Vibr, LOW); // On éteint le moteur
-  delay(1000);
+  delay(500);
 
   // Configuration des interruptions PCINT pour l'encodeur
   setupPCINT();
@@ -153,32 +174,20 @@ void loop() {
   for (int i = 0; i < 10; i++) {
     buttons[i].update();
   }
-  joystickRight.update();
-  joystickLeft.update();
-  threePosButton.update();
-
-  // Lire l'état du bouton de l'encodeur
+  
   bool currentButtonState = digitalRead(ENCODER_SW); // LOW signifie appuyé (pull-up)
 
-  // Si le bouton est pressé, ajouter 10 au score
-  if (currentButtonState) {
-    //Serial.print("Bouton de l'encodeur relaché. Nouveau score : ");
-    //Serial.println(score);
-  }
-  else {
+  // // Si le bouton est pressé, ajouter 10 au score
+  if (!currentButtonState) {
     score += 5;
     score = constrain(score, 0, 255);
     delay(100);
-    //Serial.println("Bouton de l'encodeur relâché.");
   }
-
-  // Mettre à jour l'état du bouton
-  encoderButtonState = currentButtonState;
   
 
-  // Mettre à jour l'affichage LCD
+  // // Mettre à jour l'affichage LCD
   if ( lastScore != score) {
-  lcd.displayScore(score);
+    lcd.displayScore(score);
   }
   
   // Préparation des autres données
@@ -202,9 +211,9 @@ void loop() {
   remoteData.score = score; // Mettre à jour le score dans les données à envoyer
   bool remoteDataSent = remote.sendRemoteData(remoteData);
   if (remoteDataSent) {
-    Serial.println("Autres données envoyées avec succès !");
+    //Serial.println("Autres données envoyées avec succès !");
   } else {
-    Serial.println("Échec de l'envoi des autres données.");
+    //Serial.println("Échec de l'envoi des autres données.");
   }
 
   // Délai pour stabiliser
