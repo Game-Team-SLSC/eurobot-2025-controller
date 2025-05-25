@@ -54,8 +54,6 @@ enum EncoderState {
   ENCODER_A_HIGH_B_HIGH = 0b11
 };
 
-// Adresse RF24
-const byte RF_ADDRESS[6] = "CR912";
 
 // Variables globales
 volatile byte score = 66; // Score initial
@@ -162,7 +160,6 @@ void setup() {
   digitalWrite(Motor_Vibr, HIGH); //On allume le moteur
   delay(500); // On fait une pause d'une seconde
   digitalWrite(Motor_Vibr, LOW); // On éteint le moteur
-  delay(500);
 
   // Configuration des interruptions PCINT pour l'encodeur
   setupPCINT();
