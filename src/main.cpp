@@ -56,7 +56,7 @@ enum EncoderState {
 
 
 // Variables globales
-volatile byte score = 66; // Score initial
+volatile byte score = 90; // Score initial
 byte lastScore = score;
 volatile EncoderState lastEncoderState = ENCODER_A_LOW_B_LOW;
 
