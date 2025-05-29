@@ -11,8 +11,8 @@ struct RemoteData
     JoystickData joystickLeft;
     JoystickData joystickRight;
 
-    bool buttons[13] = {
-        false, false, false, false, false, false, false, false, false, false, false, false, false
+    bool buttons[15] = {
+        false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
     };
     // for each button true if pressed
     byte slider; // 0 to 255
